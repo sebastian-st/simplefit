@@ -221,7 +221,7 @@ class ProgramState:
 	popt = []
 	pcov = []
 
-state = ProgramState()
+pstate = ProgramState()
 
 # Initialize plot
 ax.cla()
@@ -229,7 +229,7 @@ ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_xscale('linear')
 ax.set_yscale('linear')
-ax.plot(state.X, state.Y, marker='o', linestyle='', color='tab:blue')
+ax.plot(pstate.X, pstate.Y, marker='o', linestyle='', color='tab:blue')
 figure_canvas_agg.draw()
 
 
@@ -244,7 +244,7 @@ while 1:
 		break
 
 	# If user pressed 'perform fit'
-	elif event == 'perform_fit' and len(state.X) != 0:
+	elif event == 'perform_fit' and len(pstate.X) != 0:
 
 		# Erase previous plot
 		ax.cla()
@@ -253,11 +253,11 @@ while 1:
 		try:
 			x0 = float(values['x0'])
 		except:
-			x0 = min(state.X)
+			x0 = min(pstate.X)
 		try:
 			x1 = float(values['x1'])
 		except:
-			x1 = max(state.X)
+			x1 = max(pstate.X)
 
 		# Obtain fit
 		try:
@@ -284,33 +284,33 @@ while 1:
 			# Get the specific fit function and perform the fit
 			f = values['fit_func'][0]
 			func_idx = function_labels.index(f)
-			state.popt, state.pcov, chi_sq_red, state.fit_result = perform_fit(state.X,state.Y,params,x0,x1,lower,upper, func_idx)
+			pstate.popt, pstate.pcov, chi_sq_red, pstate.fit_result = perform_fit(pstate.X,pstate.Y,params,x0,x1,lower,upper, func_idx)
 
 			# Update the GUI output with the fit results
-			update_results(window, state.popt, state.pcov, chi_sq_red)
-			state.new_param_guesses = list(state.popt)
+			update_results(window, pstate.popt, pstate.pcov, chi_sq_red)
+			pstate.new_param_guesses = list(pstate.popt)
 			if values['auto_update_guess']:
-				update_guess(window, state.new_param_guesses)
+				update_guess(window, pstate.new_param_guesses)
 		except:
 			print("Error: fit didn't succeed!")
 
 	# If user selected file
 	elif event == 'fn':
 		fn_new = values['fn']
-		if fn_new != state.filename:
+		if fn_new != pstate.filename:
 			if fn_new == '':
 				continue
 			try:
-				state.input_data = np.genfromtxt(fn_new, float, names=True)
-				state.column_labels = state.input_data.dtype.names
+				pstate.input_data = np.genfromtxt(fn_new, float, names=True)
+				pstate.column_labels = pstate.input_data.dtype.names
 			except:
 				print("Error: couldn't load file contents.")
 				continue
 			try:
 				# Get file data and columns
-				state.input_data = [list(x) for x in state.input_data]
-				state.cols = list(range(len(state.input_data[0])))
-				column_select_items = ["{}: '{}'".format(x, state.column_labels[x]) for x in range(len(state.cols))]
+				pstate.input_data = [list(x) for x in pstate.input_data]
+				pstate.cols = list(range(len(pstate.input_data[0])))
+				column_select_items = ["{}: '{}'".format(x, pstate.column_labels[x]) for x in range(len(pstate.cols))]
 
 				# Update GUI elements with the column data:
 				# ...Fill x combobox:
@@ -320,7 +320,7 @@ while 1:
 				# ...overwrite values entry:
 				values['xcol'] = column_select_items[0]
 				# ...Fill y combobox:
-				yidx = 1 if len(state.cols) > 1 else 0
+				yidx = 1 if len(pstate.cols) > 1 else 0
 				window.FindElement('ycol').Update(set_to_index=yidx)
 				values['ycol'] = column_select_items[yidx]
 				
@@ -329,62 +329,65 @@ while 1:
 				window.FindElement('ylog').Update(disabled=0)
 
 				# Update filename
-				state.filename = fn_new
-				state.file_loaded = 1
+				pstate.filename = fn_new
+				pstate.file_loaded = 1
 			except:
 				print("Error: couldn't process file contents.")
 				continue
 
 	# Remove fit curve and reset initial data
 	elif event == 'Reset':
-		state.fit_result = []
+		pstate.fit_result = []
 		for p in ['p1', 'p2', 'p3']:
 			window.FindElement(p).Update(value='1.0')
 		ax.cla()
 
 	# If live preview is active and there was a change in the textfield or the checkbox, create it:
-	elif state.file_loaded and values['show_prev'] and event in ['p1', 'p2', 'p3', 'show_prev']:
+	elif pstate.file_loaded and event in ['p1', 'p2', 'p3', 'show_prev']:
 
 		# Compute preview (drawn below)
-		Xrange = np.linspace(min(state.X), max(state.X), 1000)
-		func = funcs[function_labels.index(values['fit_func'][0])]
-		try:
-			state.fit_result = [Xrange, func(Xrange, float(values['p1']), float(values['p2']), float(values['p3']))]
-		except:
-			1
+		if values['show_prev']:
+			Xrange = np.linspace(min(pstate.X), max(pstate.X), 1000)
+			func = funcs[function_labels.index(values['fit_func'][0])]
+			try:
+				pstate.fit_result = [Xrange, func(Xrange, float(values['p1']), float(values['p2']), float(values['p3']))]
+			except:
+				1
+		else:
+			pstate.fit_result = []
 
 	# If file or columns changed, update the values for xcol, ycol, X, Y:
 	if event in ['fn', 'xcol', 'ycol']:
-		if state.file_loaded:
+		if pstate.file_loaded:
 			try:
-				state.xcol = int(values['xcol'].split(":")[0])
+				pstate.xcol = int(values['xcol'].split(":")[0])
 			except:
-				state.xcol = 0
+				pstate.xcol = 0
 			try:
-				state.ycol = int(values['ycol'].split(":")[0])
+				pstate.ycol = int(values['ycol'].split(":")[0])
 			except:
-				state.ycol = 0
-			state.X = [x[state.xcol] for x in state.input_data]
-			state.Y = [x[state.ycol] for x in state.input_data]
+				pstate.ycol = 0
+			pstate.X = [x[pstate.xcol] for x in pstate.input_data]
+			pstate.Y = [x[pstate.ycol] for x in pstate.input_data]
 
 	# Set linear or log scale depending on user input
 	ax.set_xscale('log' if values['xlog'] else 'linear')
 	ax.set_yscale('log' if values['ylog'] else 'linear')
 
 	# Plot the file data
-	ax.plot(state.X, state.Y, marker=values['marker'], linestyle='', color='tab:blue')
+	ax.plot(pstate.X, pstate.Y, marker=values['marker'], linestyle='', color='tab:blue')
 
 	# If a preview or fit curve exists, draw also this curve (in red)
-	if len(state.fit_result) > 0:
-		ax.plot(state.fit_result[0], state.fit_result[1], 'r-', linewidth=1) 
+	if len(pstate.fit_result) > 0:
+		ax.plot(pstate.fit_result[0], pstate.fit_result[1], 'r-', linewidth=1) 
 
 	# Try to set x and y labels according to columns:
 	try:
-		ax.set_xlabel(state.column_labels[int(values['xcol'].split(":")[0])])
+		ax.set_xlabel(pstate.column_labels[int(values['xcol'].split(":")[0])])
 	except:
 		ax.set_xlabel("x")
 	try:
-		ax.set_ylabel(state.column_labels[int(values['ycol'].split(":")[0])])
+		ax.set_ylabel(pstate.column_labels[int(values['ycol'].split(":")[0])])
 	except:
 		ax.set_ylabel("y")
 
