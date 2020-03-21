@@ -343,7 +343,7 @@ while 1:
 		ax.cla()
 
 	# If live preview is active and there was a change in the textfield or the checkbox, create it:
-	elif pstate.file_loaded and event in ['p1', 'p2', 'p3', 'show_prev']:
+	elif pstate.file_loaded and event == 'show_prev' or (values['show_prev'] and event in ['p1', 'p2', 'p3']):
 
 		# Compute preview (drawn below)
 		if values['show_prev']:
