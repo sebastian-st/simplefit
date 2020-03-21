@@ -1,5 +1,5 @@
 # simplefit (beta)
-Python interface for fitting exponential, linear and polynomial growth using scipy.optimize and pysimplegui; originally developed for visualizing the spread of viruses
+Simplefit is an interactive graphical tool for fitting exponential, linear and polynomial growth based on the scipy and pysimplegui libraries. It was originally developed for visualizing the spread of viruses, but in principle can be extended to arbitrary functions.
 
 # Requirements
 Python libraries: 
