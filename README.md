@@ -10,7 +10,13 @@ Python libraries:
 - pysimplegui
 
 # Usage
-Run the code with no arguments. This should open a GUI window in which you can import text catalog files with multiple columns (requires header):
+Run the code with no arguments. This should open a GUI window, as shown below, in which you can import text catalog files with multiple columns (requires header).
+
+At the moment, the following three fit functions are implemented by default:
+- Exponential function
+- Linear function
+- Polynomial of second order
+but a generalisation to any other function (with maximally 3 parameters) is possible. In principle, the code can be extended to any fit function with any number of parameters, which I plan as an additional feature in upcoming versions.
 
 ![Screenshot](http://sebastian.stapelberg.de/documents/simplefit.png "Screenshot")
 
